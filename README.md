@@ -1,2 +1,3 @@
 # Fiverr-Scraper
-Scraps order deliveries from Fiverr
+
+Scrapes order deliveries from Fiverr by looping through the frontend a tags. Begins when the user clicks the chrome-extension.
