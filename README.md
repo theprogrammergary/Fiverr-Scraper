@@ -5,3 +5,5 @@ I needed to get all of my deliveries from my fiverr. So I built a scraper/chrome
 Step 1 - Install Chrome Extension
 Step 2 - Visit "https://www.fiverr.com/users/{yourUsername}/manage_orders?source=header_nav&search_type=completed"
 Step 3 - Click the Chrome Extension Icon to begin downloading your orders.
+
+Step 4 - Enjoy!
