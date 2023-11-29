@@ -24,6 +24,8 @@ function downloadFiverrLinks() {
   const deliveryDate = cleanElement(deliveryDateElement);
 
   console.log("Downloading Files...");
+  return;
+
   linksToDownload.forEach((link) => {
     try {
       const linkHref = link.getAttribute("href");
@@ -35,7 +37,7 @@ function downloadFiverrLinks() {
       const customPath = `./fiverr/tradingview/${deliveryDate}_${orderNumber}/`;
       const fullPath = customPath + fileName;
       chrome.runtime.sendMessage({
-        action: "downloadFile",
+        action: "downloadFiverrFile",
         url: linkHref,
         filename: fullPath,
       });
