@@ -15,7 +15,8 @@
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   },
-  "permissions": ["activeTab", "scripting", "tabs", "storage"],
+  "permissions": ["activeTab", "scripting", "tabs", "downloads"],
+  "host_permissions": ["https://www.fiverr.com/"],
   "background": {
     "service_worker": "src/background.js"
   }
