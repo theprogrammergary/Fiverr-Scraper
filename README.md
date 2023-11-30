@@ -6,7 +6,7 @@ If you need to retrieve all of your deliveries from your Fiverr account, I've bu
 
 **Step 1:** Install the Chrome Extension.
 
-**Step 2:** Visit [Fiverr Manage Orders](https://www.fiverr.com/users/{yourUsername}/manage_orders?source=header_nav&search_type=completed).
+**Step 2:** Visit your Orders Page 👉🏻 (https://www.fiverr.com/users/{yourUsername}/manage_orders?source=header_nav&search_type=completed)
 
 **Step 3:** Click on the Chrome Extension Icon to begin.
 
