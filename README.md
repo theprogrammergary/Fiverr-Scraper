@@ -1,6 +1,6 @@
 # Fiverr Order Scraper
 
-If you need to retrieve all of your deliveries from your Fiverr account, I've built a scraper/chrome extension to help in a semi-automated fashion. I initially attempted to use a headless browser with Puppeteer but encountered bot detection issues. This solution is faster and served my needs well. Please note that I can't guarantee it will work flawlessly for everyone, and I haven't accounted for all possible edge cases. However, this should provide you with a solid starting point if you require a similar solution.
+If you need to retrieve all of your deliveries from your Fiverr account, I've built a scraper/chrome extension to help in a semi-automated fashion. I needed to get over 700 orders and their deliveries from Fiverr. Primarily the attachments that weren't videos from the delivery. I initially attempted to use a headless browser with Puppeteer but encountered bot detection issues. This solution is faster and served my needs fairly-well, but would need some love to get it rock solid. Please note that I can't guarantee it will work flawlessly for everyone. However, this should provide you with a solid starting point if you require a similar solution.
 
 **Instructions:**
 

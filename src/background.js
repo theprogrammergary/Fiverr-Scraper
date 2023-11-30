@@ -2,6 +2,17 @@ const validStartUrl =
   /^https:\/\/www\.fiverr\.com\/users\/[^/]+\/manage_orders\?source=header_nav&search_type=completed/;
 const validDownloadUrl = "https://www.fiverr.com/orders";
 
+chrome.action.onClicked.addListener(async (tab) => {
+  if (tab.id) {
+    if (tab.url && validStartUrl.test(tab.url)) {
+      await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        files: ["src/scriptOrderList.js"],
+      });
+    }
+  }
+});
+
 chrome.tabs.onUpdated.addListener(async (tabID, changeInfo, tab) => {
   if (changeInfo.status == "complete") {
     if (tab.url?.startsWith(validDownloadUrl)) {
@@ -42,20 +53,9 @@ chrome.tabs.onUpdated.addListener(async (tabID, changeInfo, tab) => {
   }
 });
 
-chrome.action.onClicked.addListener(async (tab) => {
-  if (tab.id) {
-    if (tab.url && validStartUrl.test(tab.url)) {
-      await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        files: ["src/scriptOrderList.js"],
-      });
-    }
-  }
-});
-
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "downloadFiverrFile") {
-    const { url, filename, htmlFilename } = message;
+    const { url, filename } = message;
     chrome.downloads.download(
       {
         url: url,
@@ -70,5 +70,54 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         }
       }
     );
+  } else if (message.action === "createMessageDeliveryFile") {
+    const { deliveryContent, filename } = message;
+    const blob = new Blob([deliveryContent], {
+      type: "text;charset=utf-8",
+    });
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const buffer = reader.result;
+      const blobUrl = `data:${blob.type};base64,${btoa(
+        new Uint8Array(buffer).reduce(
+          (data, byte) => data + String.fromCharCode(byte),
+          ""
+        )
+      )}`;
+      chrome.downloads.download({
+        url: blobUrl,
+        filename: filename,
+      });
+    };
+    reader.readAsArrayBuffer(blob);
+  } else if (message.action === "startDownloadingFiles") {
+    const orderList = message.orderList;
+    console.log("Received Downloaded Order IDs: ", orderList);
+
+    async function processOrderList(orderList) {
+      for (const order of orderList) {
+        try {
+          const downloadLink = `https://www.fiverr.com/orders/${order}/activities`;
+          const tab = await chrome.tabs.create({ url: downloadLink });
+          const randomTimeout = Math.floor(Math.random() * 11000) + 5000;
+          await new Promise((resolve) => setTimeout(resolve, randomTimeout));
+          await chrome.tabs.remove(tab.id);
+        } catch (error) {
+          console.error(`Error processing order: ${order.url}`, error);
+        }
+      }
+    }
+
+    if (orderList.length > 0) {
+      processOrderList(orderList)
+        .then(() => {
+          console.log("Finished processing orders");
+          alert("Finished processing orders");
+        })
+        .catch((error) => {
+          console.error("Error processing orders: ", error);
+        });
+    }
   }
 });

@@ -1,4 +1,5 @@
 // runs when script is loaded from background.js
+const encryptedIdsList = [];
 getUsername()
   .then((fiverrUsername) => {
     const startUrl = `https://www.fiverr.com/users/${fiverrUsername}/manage_orders/type/completed?cmd=n`;
@@ -10,7 +11,6 @@ getUsername()
 
 async function fetchEncryptedIds(startUrl) {
   console.log("Fetching Encrypted IDs from URL: ", startUrl);
-  const encryptedIdsList = [];
   try {
     const response = await fetch(startUrl, {
       method: "GET",
@@ -35,10 +35,15 @@ async function fetchEncryptedIds(startUrl) {
     }
 
     if (nextUrl) {
-      await new Promise((resolve) => setTimeout(resolve, 5000));
+      await new Promise((resolve) => setTimeout(resolve, 3000));
       await fetchEncryptedIds(nextUrl);
     } else {
-      console.log("Finished Downloading Order IDs");
+      console.log("Sending Downloaded Order IDs: ", encryptedIdsList);
+
+      chrome.runtime.sendMessage({
+        action: "startDownloadingFiles",
+        orderList: encryptedIdsList,
+      });
     }
   } catch (error) {
     console.log("Error:", error);

@@ -1,17 +1,10 @@
-// sample links
-// https://www.fiverr.com/download/attachment/message/65561171c437ea0017e3d3f2/65561156a8d877001cf253e2/FibSignal_doublej1.txt?order_id=FO3BCB7D5D41&signature=63194ca70c6e4a70f3ccdf1beb94f7e09e7ab0e5a4254d6e7703f4d638510e57
-
-// https://www.fiverr.com/download/attachment/message/65561171c437ea0017e3d3f2/6556116a4f651f001aee5798/2023-11-16%2007-52-05.mp4?order_id=FO3BCB7D5D41&signature=d26213d5d662ed55acce12b1444e37b647af8033ec00fc8780f27448a8221300
 downloadFiverrLinks();
 
 function downloadFiverrLinks() {
   console.clear();
 
-  const linksToDownload = document.querySelectorAll(
-    'a[href^="https://www.fiverr.com/download"]'
-  );
-
-  if (!linksToDownload) return;
+  const filteredArticles = filterArticles();
+  if (!filteredArticles) return;
 
   const orderNumberElement = document.querySelector(
     "#__ZONE__main > div > div > section > div > div.grid-12.seller-grid > aside > div > div > div.wrap-box.m-b-16.p-0 > div > aside > article > div.collapsible-content > ul > li:nth-child(4) > span"
@@ -20,29 +13,39 @@ function downloadFiverrLinks() {
     "#__ZONE__main > div > div > section > div > div.grid-12.seller-grid > aside > div > div > div.wrap-box.m-b-16.p-0 > div > aside > article > div.collapsible-content > ul > li:nth-child(2) > span > i"
   );
 
-  const orderNumber = cleanElement(orderNumberElement);
-  const deliveryDate = cleanElement(deliveryDateElement);
+  const orderNumber = cleanElementText(orderNumberElement);
+  const deliveryDate = cleanElementText(deliveryDateElement);
 
   console.log("Downloading Files...");
-  return;
-
-  linksToDownload.forEach((link) => {
+  filteredArticles.forEach((article) => {
     try {
-      const linkHref = link.getAttribute("href");
-      const fileName = extractFileName(linkHref);
+      const filteredDownloadLinks = filterDownloadLinks(article);
 
-      if (!fileName) return;
-      if (isVideoFile(fileName)) return;
+      if (filteredDownloadLinks.length > 0) {
+        const deliveryContent = extractArticleMessageContent(article);
 
-      const customPath = `./fiverr/tradingview/${deliveryDate}_${orderNumber}/`;
-      const fullPath = customPath + fileName;
-      chrome.runtime.sendMessage({
-        action: "downloadFiverrFile",
-        url: linkHref,
-        filename: fullPath,
+        if (deliveryContent) {
+          const customDeliveryTextFilepath = `./fiverr/${deliveryDate}_${orderNumber}/delivery.txt`;
+          chrome.runtime.sendMessage({
+            action: "createMessageDeliveryFile",
+            deliveryContent: deliveryContent,
+            filename: customDeliveryTextFilepath,
+          });
+        }
+      }
+
+      filteredDownloadLinks.forEach((linkObj) => {
+        const { linkHref, fileName } = linkObj;
+        if (isVideoFile(fileName)) return;
+        const customFilepath = `./fiverr/${deliveryDate}_${orderNumber}/${fileName}`;
+        chrome.runtime.sendMessage({
+          action: "downloadFiverrFile",
+          url: linkHref,
+          filename: customFilepath,
+        });
       });
     } catch (error) {
-      console.error(`Caught Error downloading link: ${link.textContent}`);
+      console.error(`Caught Error in article: ${article}`);
       console.error(error);
     }
   });
@@ -61,11 +64,76 @@ function isVideoFile(fileName) {
   return videoExtensions.some((ext) => fileName.endsWith(ext));
 }
 
-function cleanElement(element) {
+function cleanElementText(element) {
   const cleanedElement = element.textContent
     .replace(/,/g, "")
     .replace(/:/g, "")
     .replace(/\s+/g, "_")
     .replace(/[^a-zA-Z0-9_-]/g, "");
   return cleanedElement;
+}
+1;
+
+function filterArticles() {
+  const articles = document.querySelectorAll("article");
+  const filteredArticles = [];
+
+  articles.forEach((article) => {
+    const titleTextElement = article.querySelector("span.title-text");
+    const downloadLinks = article.querySelectorAll(
+      'a[href^="https://www.fiverr.com/download"]'
+    );
+
+    if (titleTextElement) {
+      const titleText = titleTextElement.textContent.trim();
+      const hasDownloadLink = downloadLinks.length > 0;
+      const fromSeller =
+        titleText.startsWith("You sent") ||
+        titleText.startsWith("You delivered");
+      if (fromSeller && hasDownloadLink) {
+        filteredArticles.push(article);
+      }
+    }
+  });
+  return filteredArticles;
+}
+
+function filterDownloadLinks(article) {
+  const downloadLinks = article.querySelectorAll(
+    'a[href^="https://www.fiverr.com/download"]'
+  );
+  const filteredLinks = [];
+
+  downloadLinks.forEach((link) => {
+    try {
+      const linkHref = link.getAttribute("href");
+      const fileName = extractFileName(linkHref);
+      if (!fileName) return;
+      filteredLinks.push({ linkHref, fileName });
+    } catch (error) {
+      console.error(`Error processing download link: ${link.href}`);
+      console.error(error);
+    }
+  });
+
+  return filteredLinks;
+}
+
+function extractArticleMessageContent(article) {
+  const userMessageDiv = article.querySelector(".user-message");
+  if (userMessageDiv) {
+    const messageContent = userMessageDiv.querySelector("p");
+    if (messageContent) {
+      const messageText = messageContent.textContent.trim();
+      return messageText;
+    }
+  }
+
+  const messageContentDiv = article.querySelector(".message-content");
+  if (messageContentDiv) {
+    const messageText = messageContentDiv.textContent.trim();
+    return messageText;
+  }
+
+  return null;
 }
