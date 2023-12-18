@@ -20,7 +20,7 @@ If you need to retrieve all of your deliveries from your Fiverr account, I've bu
 
 **Step 5:** All your Order IDs will be downloaded in the background.
 
-**Step 6:** Once your Order IDs are downloaded, it will start opening new tabs to download the delivery files, excluding any video files.
+**Step 6:** Once your Order IDs are downloaded, it will start opening new tabs to download the delivery files, excluding any video files. If there were multiple deliveries it only downloads the last few that are initially visible when opening a new tab.
 
 **Step 7:** There are pauses in place to avoid triggering any throttling measures.
 
